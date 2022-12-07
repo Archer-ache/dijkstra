@@ -32,13 +32,15 @@ void CreateMGraph(MGraph &G){
             }
             G.arcnum++;
         }
-    }//读取第一次
+    }//读取第一次,获取顶点与边的信息
     cin.clear();//一定要加！！
     G.ADJmatrix=(int**)malloc(G.vexnum*sizeof(int*));
     for(i=0;i<G.vexnum;i++){
         G.ADJmatrix[i]=(int*)malloc(G.vexnum*sizeof(int));
-        for(j=0;j<G.vexnum;j++)
-        G.ADJmatrix[i][j]=INF;
+        for(j=0;j<G.vexnum;j++){
+            if(i==j)G.ADJmatrix[i][j]=0;//认为自身可达自身并且距离为0
+            G.ADJmatrix[i][j]=INF;
+        }
     }//初始化邻接矩阵
     if(!(freopen("test.txt","r",stdin)))
     cout<<"cannot open file"<<endl;
@@ -74,10 +76,25 @@ void PrintMGraph(MGraph G){
         cout<<endl;
     }
 }//打印函数
-void Dijkstra
+typedef struct Node{
+    int data;
+    Node* next;
+}*list;
+typedef struct{
+    int dst;
+    list path;
+}Path;
+int DijkstraMGraph(MGraph G,int src,int dst){
+    int dis[G.vexnum];//记录从src到各顶点的距离
+    int
+    Path T[G.vexnum];
+    int i;
+    for(i=0;i<G.vexnum;i++)
+        dis[i]=G.ADJmatrix[src][i];
+    
+}//输出从src到dst的最短路径长度，返回最短路径长度
 int main(){
     MGraph G;
-    //GetVexnum(G);
     CreateMGraph(G);
     PrintMGraph(G);
 }
