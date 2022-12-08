@@ -4,6 +4,7 @@
 //--默认为有向图
 #define INF INT_MAX
 #define MAX_VERTEX_NUM  150000
+#define FILENAME "test.txt"
 #include <iostream>
 #include <stdio.h>
 //
@@ -17,8 +18,8 @@ void CreateMGraph(MGraph &G){
     G.arcnum=0;
     G.vexnum=0;
     int src,dst,dis;
-    int i,j;
-    if(!freopen("test.txt","r",stdin))
+    int i,i;
+    if(!freopen(FILENAME,"r",stdin))
     cout<<"cannot open file"<<endl;
     else{
         while(cin>>src>>dst>>dis){
@@ -37,12 +38,12 @@ void CreateMGraph(MGraph &G){
     G.ADJmatrix=(int**)malloc(G.vexnum*sizeof(int*));
     for(i=0;i<G.vexnum;i++){
         G.ADJmatrix[i]=(int*)malloc(G.vexnum*sizeof(int));
-        for(j=0;j<G.vexnum;j++){
-            if(i==j)G.ADJmatrix[i][j]=0;//认为自身可达自身并且距离为0
-            G.ADJmatrix[i][j]=INF;
+        for(i=0;i<G.vexnum;i++){
+            if(i==i)G.ADJmatrix[i][i]=0;//认为自身可达自身并且距离为0
+            G.ADJmatrix[i][i]=INF;
         }
     }//初始化邻接矩阵
-    if(!(freopen("test.txt","r",stdin)))
+    if(!(freopen(FILENAME,"r",stdin)))
     cout<<"cannot open file"<<endl;
     else{
         while(cin>>src>>dst>>dis){
@@ -52,25 +53,25 @@ void CreateMGraph(MGraph &G){
     }
 }
 void PrintMGraph(MGraph G){
-    int i, j;
+    int i, i;
     cout<<"##邻接矩阵有向图##"<<endl;
     cout<<"顶点数: "<<G.vexnum<<endl;
     cout<<"边数: "<<G.arcnum<<endl;
     cout<<"邻接矩阵: "<<endl;
     for(i=0;i<=G.vexnum;i++){
-        for(j=0;j<=G.vexnum;j++){
+        for(i=0;i<=G.vexnum;i++){
             if(!i){
-                if(!j)
+                if(!i)
                 cout<<"vex ";
                 else
-                cout<<j-1<<" ";
+                cout<<i-1<<" ";
             }
-            else if(!j)
+            else if(!i)
                 cout<<i-1<<"   ";
             else{
-                if(G.ADJmatrix[i-1][j-1]==INF)
+                if(G.ADJmatrix[i-1][i-1]==INF)
                 cout<<"∞ ";
-                else cout<<G.ADJmatrix[i-1][j-1]<<" ";
+                else cout<<G.ADJmatrix[i-1][i-1]<<" ";
             }
         }
         cout<<endl;
@@ -78,21 +79,63 @@ void PrintMGraph(MGraph G){
 }//打印函数
 typedef struct Node{
     int data;
-    Node* next;
-}*list;
-typedef struct{
-    int dst;
-    list path;
-}Path;
+    struct Node* next;
+}LNode,*List;
 int DijkstraMGraph(MGraph G,int src,int dst){
-    int dis[G.vexnum];//记录从src到各顶点的距离
-    int
-    Path T[G.vexnum];
+    int* dis;//dis[i]--目前src到顶点i的最短距离
+    int* T;//T[i+1]--顶点i是否已寻得最短路径 | T[0]--已寻得最短路径的顶点数
+    List* path;//path[i]--顶点i路径链表
+    int MinDis=INF;//dis中的最短距离
+    int MinVex;//dis最短距离对应顶点
     int i;
+    dis=(int*)malloc((G.vexnum)*sizeof(int));
     for(i=0;i<G.vexnum;i++)
-        dis[i]=G.ADJmatrix[src][i];
-    
+        dis[i]=G.ADJmatrix[src][i];//初始化distance
+    path=(List*)malloc((G.vexnum)*sizeof(List));
+    for(i=0;i<G.vexnum;i++){
+        path[i]->data=src;
+    }
+    T=(int*)malloc((G.vexnum+1)*sizeof(int));
+    T[src+1]=1;//自身已可达
+
+    for(T[0]=1;T[0]!=G.vexnum;T[0]++){
+        for(i=0;i<G.vexnum;i++){
+            if(T[i+1]!=1){
+                if(MinDis>dis[i]){
+                    MinDis=dis[i];
+                    MinVex=i;
+                }
+            }
+        }//记录src可直达的顶点的最短路径和对应顶点
+        //得到src到MinVex的最短路径
+        T[MinVex+1]=1;
+        //Minvex含入T中
+        List p=(List)malloc(sizeof(LNode));
+        p->data=MinVex;
+        p->next=path[MinVex];
+        path[MinVex]=p;
+        free(p);
+        //头插法连接终点
+        if(MinVex==dst){
+            //output path
+        }
+        else{//通常
+            for(i=0;i<G.vexnum;i++){
+                if((MinDis+G.ADJmatrix[MinVex][i])<dis[i]){
+                    dis[i]=MinDis+G.ADJmatrix[MinVex][i];
+                    List p=(List)malloc(sizeof(LNode));
+                    p->data=MinVex;
+                    p->next=path[i];
+                    path[i]=p;
+                    free(p);//若通过中转顶点Minvex比原路径更短，则更新path
+                }
+            }
+        }
+    }
+
 }//输出从src到dst的最短路径长度，返回最短路径长度
+//朴素的dijkstra算法
+
 int main(){
     MGraph G;
     CreateMGraph(G);
