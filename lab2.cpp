@@ -27,15 +27,16 @@ typedef struct{
     int vexnum,arcnum;
 }ALGraph;//邻接表定义
 void CreateMGraph(MGraph &G){
+    FILE* fp;
     G.arcnum=0;
     G.vexnum=0;
     int src,dst,dis;
     int i,j;
     for(i=0;i<MAX_VERTEX_NUM;i++)G.vexs[i]=0;//助教救的
-    if(!freopen(FILENAME,"r",stdin))
+    if(!(fp=fopen(FILENAME,"r")))
     cout<<"cannot open file"<<endl;
     else{
-        while(cin>>src>>dst>>dis){
+        while(fscanf(fp,"%d %d %d",&src,&dst,&dis)!=EOF){
             if(G.vexs[src]!=1){
                 G.vexs[src]=1;
                 G.vexnum++;
@@ -47,7 +48,7 @@ void CreateMGraph(MGraph &G){
             G.arcnum++;
         }
     }//读取第一次,获取顶点与边的信息
-    cin.clear();//一定要加！！
+    fclose(fp);
     G.ADJmatrix=(int**)malloc(G.vexnum*sizeof(int*));
     for(i=0;i<G.vexnum;i++){
         G.ADJmatrix[i]=(int*)malloc(G.vexnum*sizeof(int));
@@ -58,14 +59,14 @@ void CreateMGraph(MGraph &G){
             }
         }
     }//初始化邻接矩阵
-    if(!(freopen(FILENAME,"r",stdin)))
+    if(!(fp=fopen(FILENAME,"r")))
     cout<<"cannot open file"<<endl;
     else{
-        while(cin>>src>>dst>>dis){
+        while(fscanf(fp,"%d %d %d",&src,&dst,&dis)!=EOF){
             G.ADJmatrix[src][dst]=dis;
         }
     }
-    cin.clear();
+    fclose(fp);
 }
 void CreateALGraph(ALGraph &G){
     G.arcnum=0;
