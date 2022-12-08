@@ -40,7 +40,9 @@ void CreateMGraph(MGraph &G){
         G.ADJmatrix[i]=(int*)malloc(G.vexnum*sizeof(int));
         for(j=0;j<G.vexnum;j++){
             if(i==j)G.ADJmatrix[i][j]=0;//认为自身可达自身并且距离为0
-            G.ADJmatrix[i][j]=INF;
+            else{
+                G.ADJmatrix[i][j]=INF;
+            }
         }
     }//初始化邻接矩阵
     if(!(freopen(FILENAME,"r",stdin)))
