@@ -4,7 +4,7 @@
 //--*默认为有向图*--
 #define INF INT_MAX
 #define MAX_VERTEX_NUM  10000
-#define FILENAME "data.txt"
+#define FILENAME "test.txt"
 #include <iostream>
 #include <stdio.h>
 //
@@ -16,13 +16,14 @@ typedef struct{
 }MGraph;//邻接矩阵定义
 typedef struct ArcNode{
     int adjvex;
+    int weight;
     struct ArcNode* nextarc;
 }ArcNode;
-typedef struct VexNode{
-    int data;
+typedef struct{
     ArcNode* firstarc;
 }VexNode,*ADJList;
 typedef struct{
+    int vexs[MAX_VERTEX_NUM];
     ADJList vertices;
     int vexnum,arcnum;
 }ALGraph;//邻接表定义
@@ -69,8 +70,51 @@ void CreateMGraph(MGraph &G){
     fclose(fp);
 }
 void CreateALGraph(ALGraph &G){
+    FILE* fp;
     G.arcnum=0;
     G.vexnum=0;
+    int src,dst,dis;
+    int i,j;
+    if(!(fp=fopen(FILENAME,"r")))
+    cout<<"cannot open file"<<endl;
+    else{
+        while(fscanf(fp,"%d %d %d",&src,&dst,&dis)!=EOF){
+            if(G.vexs[src]!=1){
+                G.vexs[src]=1;
+                G.vexnum++;
+            }
+            if(G.vexs[dst]!=1){
+                G.vexs[dst]=1;
+                G.vexnum++;
+            }
+            G.arcnum++;
+        }
+    }
+    fclose(fp);
+    G.vertices=(ADJList)malloc(G.vexnum*sizeof(VexNode));
+    for(i=0;i<G.vexnum;i++){
+        G.vertices[i].firstarc=NULL;
+    }
+    if(!(fp=fopen(FILENAME,"r")))
+    cout<<"cannot open file"<<endl;
+    else{
+        while(fscanf(fp,"%d %d %d",&src,&dst,&dis)!=EOF){
+            if(G.vertices[src].firstarc==NULL){
+                G.vertices[src].firstarc=(ArcNode*)malloc(sizeof(ArcNode));
+                G.vertices[src].firstarc->adjvex=dst;
+                G.vertices[src].firstarc->weight=dis;
+                G.vertices[src].firstarc->nextarc=NULL;
+            }
+            else{
+                ArcNode* p=(ArcNode*)malloc(sizeof(ArcNode));
+                p->adjvex=dst;
+                p->weight=dis;
+                p->nextarc=G.vertices[src].firstarc;
+                G.vertices[src].firstarc=p;
+            }
+        }
+    }
+    fclose(fp);
 }
 void PrintMGraph(MGraph G){
     int i,j;
@@ -87,12 +131,12 @@ void PrintMGraph(MGraph G){
                 }
                 else{
                     cout.width(5);
-                    cout<<"v"<<j;
+                    cout<<"v"<<j-1;
                 }
             }
             else if(!j){
                 cout.width(5);
-                cout<<"v"<<i;
+                cout<<"v"<<i-1;
             }
                 
             else{
@@ -109,6 +153,21 @@ void PrintMGraph(MGraph G){
         cout<<endl;
     }
 }//打印函数
+void PrintALGraph(ALGraph G){
+    int i;
+    ArcNode* p;
+    cout<<"##邻接表有向图##"<<endl;
+    cout<<"顶点数: "<<G.vexnum<<endl;
+    cout<<"边数: "<<G.arcnum<<endl;
+    cout<<"邻接表: "<<endl;
+    for(i=0;i<G.vexnum;i++){
+        cout<<"v"<<i<<": ";
+        for(p=G.vertices[i].firstarc;p!=NULL;p=p->nextarc){
+            cout<<"-->|"<<p->weight<<"|"<<p->adjvex<<"|";
+        }
+        cout<<endl;
+    }
+}
 typedef struct Node{
     int data;
     struct Node* next;
@@ -130,7 +189,7 @@ void DijkstraMGraph(MGraph G,int src,int dst){
     path=(List*)malloc((G.vexnum)*sizeof(List));
     for(i=0;i<G.vexnum;i++){
         path[i]=(LNode*)malloc(sizeof(LNode));//重点
-        path[i]->data=src;
+        path[i]->data=src;//否则->会导致段错误
         path[i]->next=NULL;
     }//初始化path
     T=(int*)malloc((G.vexnum+1)*sizeof(int));
@@ -217,20 +276,33 @@ void DijkstraMGraph(MGraph G,int src,int dst){
     }//spc
 }//输出从src到dst的最短路径长度，返回最短路径长度
 //朴素的dijkstra算法
+void DijkstraALGraph(ALGraph G, int src,int dst){
 
-int UI(MGraph &G){
+}
+int UI(MGraph &MG,ALGraph &ALG){
     int op;
     cin>>op;
     switch(op){
         case 1:{
-            PrintMGraph(G);
+            PrintMGraph(MG);
             return 1;
         }
         case 2:{
+            PrintALGraph(ALG);
+            return 1;
+        }
+        case 3:{
             int src,dst;
             cout<<"输入src,dst"<<endl;
             cin>>src>>dst;
-            DijkstraMGraph(G,src,dst);
+            DijkstraMGraph(MG,src,dst);
+            return 1;
+        }
+        case 4:{
+            int src,dst;
+            cout<<"输入src,dst"<<endl;
+            cin>>src>>dst;
+            DijkstraALGraph(ALG,src,dst);
             return 1;
         }
         case 0:return 0;
@@ -242,14 +314,18 @@ int UI(MGraph &G){
 }
 int main(){
     cout<<"执行操作："<<endl;
-    cout<<"1.打印图"<<endl;
-    cout<<"2.求最短路径"<<endl;
+    cout<<"1.打印邻接矩阵图"<<endl;
+    cout<<"2.打印邻接表图"<<endl;
+    cout<<"3.邻接矩阵求最短路径"<<endl;
+    cout<<"4.邻接表求最短路径"<<endl;
     cout<<"0.结束程序"<<endl;
     int in;
-    MGraph G;
-    CreateMGraph(G);
+    MGraph MG;
+    ALGraph ALG;
+    CreateMGraph(MG);
+    CreateALGraph(ALG);
     do{
-        in=UI(G);
+        in=UI(MG,ALG);
     }
     while(in==1);
     return 0;
