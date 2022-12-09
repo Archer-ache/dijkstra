@@ -190,8 +190,8 @@ void DijkstraMGraph(MGraph G,int src,int dst){
     }//初始化distance
     path=(List*)malloc((G.vexnum)*sizeof(List));
     for(i=0;i<G.vexnum;i++){
-        path[i]=(LNode*)malloc(sizeof(LNode));//重点
-        path[i]->data=src;//重点:否则野指针->会导致段错误
+        path[i]=(LNode*)malloc(sizeof(LNode));//重点:否则野指针->会导致段错误
+        path[i]->data=src;
         path[i]->next=NULL;
     }//初始化path
     T=(int*)malloc((G.vexnum+1)*sizeof(int));
@@ -299,6 +299,8 @@ void DijkstraALGraph(ALGraph G, int src,int dst){
     path=(List*)malloc((G.vexnum)*sizeof(List));
     for(i=0;i<G.vexnum;i++){
         path[i]=(LNode*)malloc(sizeof(LNode));
+        path[i]->data=src;
+        path[i]->next=NULL;
     }//初始化path
         T=(int*)malloc((G.vexnum)*sizeof(int));
     for(i=0;i<G.vexnum;i++){
