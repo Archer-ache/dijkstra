@@ -7,6 +7,7 @@
 #define FILENAME "test.txt"
 #include <iostream>
 #include <stdio.h>
+#include <queue>
 //
 using namespace std;
 typedef struct{
@@ -160,6 +161,7 @@ void PrintALGraph(ALGraph G){
     cout<<"顶点数: "<<G.vexnum<<endl;
     cout<<"边数: "<<G.arcnum<<endl;
     cout<<"邻接表: "<<endl;
+    cout<<"eg:-->arc:{|weight|adjvex|}"<<endl;
     for(i=0;i<G.vexnum;i++){
         cout<<"v"<<i<<": ";
         for(p=G.vertices[i].firstarc;p!=NULL;p=p->nextarc){
@@ -189,7 +191,7 @@ void DijkstraMGraph(MGraph G,int src,int dst){
     path=(List*)malloc((G.vexnum)*sizeof(List));
     for(i=0;i<G.vexnum;i++){
         path[i]=(LNode*)malloc(sizeof(LNode));//重点
-        path[i]->data=src;//否则->会导致段错误
+        path[i]->data=src;//重点:否则野指针->会导致段错误
         path[i]->next=NULL;
     }//初始化path
     T=(int*)malloc((G.vexnum+1)*sizeof(int));
@@ -202,15 +204,15 @@ void DijkstraMGraph(MGraph G,int src,int dst){
         int MinDis=INF;//dis中的最短距离
         int MinVex=dst;//dis最短距离对应顶点
         if(T[dst+1]){
-            cout<<"src: v"<<src+1<<", dst: v"<<dst+1<<"间存在最短路径"<<endl;
+            cout<<"src: v"<<src<<", dst: v"<<dst<<"间存在最短路径"<<endl;
             cout<<"路径长度: "<<dis[dst]<<endl;
             cout<<"path: ";
             for(List q=path[dst];q!=NULL;q=q->next){
                 if(q->next==NULL){
-                    cout<<"v"<<q->data+1;
+                    cout<<"v"<<q->data;
                 }
                 else{
-                    cout<<"v"<<q->data+1<<"<--";
+                    cout<<"v"<<q->data<<"<--";
                 }
             }
             cout<<endl;
@@ -227,7 +229,7 @@ void DijkstraMGraph(MGraph G,int src,int dst){
             }//记录src当前可达的顶点的最短路径和对应顶点
             //得到src到MinVex的最短路径
             if(MinDis==INF){
-                cout<<"src: v"<<src+1<<", dst: v"<<dst+1<<"间不存在最短路径"<<endl;
+                cout<<"src: v"<<src<<", dst: v"<<dst<<"间不存在最短路径"<<endl;
                 return;//output no path
             }//src无处可达
             else{
@@ -240,15 +242,15 @@ void DijkstraMGraph(MGraph G,int src,int dst){
                 //free(p);
                 //头插法连接终点
                 if(MinVex==dst){
-                    cout<<"src: v"<<src+1<<", dst: v"<<dst+1<<"间存在最短路径"<<endl;
+                    cout<<"src: v"<<src<<", dst: v"<<dst<<"间存在最短路径"<<endl;
                     cout<<"路径长度: "<<dis[dst]<<endl;
                     cout<<"path: ";
                     for(List q=path[dst];q!=NULL;q=q->next){
                         if(q->next==NULL){
-                            cout<<"v"<<q->data+1;
+                            cout<<"v"<<q->data;
                         }
                         else{
-                            cout<<"v"<<q->data+1<<"<--";
+                            cout<<"v"<<q->data<<"<--";
                         }
                     }
                     cout<<endl;
@@ -274,11 +276,59 @@ void DijkstraMGraph(MGraph G,int src,int dst){
         }//else1
     }//for1
     }//spc
-}//输出从src到dst的最短路径长度，返回最短路径长度
-//朴素的dijkstra算法
-void DijkstraALGraph(ALGraph G, int src,int dst){
+}//输出从src到dst的最短路径长度--朴素的dijkstra算法
+typedef pair<int,int>PII;//pair自动按第一关键字优先来比较大小
 
-}
+void DijkstraALGraph(ALGraph G, int src,int dst){
+    if(G.vexs[src]==0||G.vexs[dst]==0){
+        cout<<"不合法的操作：顶点不存在。"<<endl;
+    }
+    else
+    {
+    priority_queue<PII,vector<PII>,greater<PII>> heap;
+    int* dis;//同朴素dijkstra
+    int* T;//T[i]--顶点i是否已寻得最短路径
+    List* path;//同朴素dijkstra
+    ArcNode* p;
+    int i;
+    dis=(int*)malloc((G.vexnum)*sizeof(int));
+    for(i=0;i<G.vexnum;i++){
+        if(i==src)dis[i]=0;
+        else dis[i]=INF;
+    }//初始化distance
+    path=(List*)malloc((G.vexnum)*sizeof(List));
+    for(i=0;i<G.vexnum;i++){
+        path[i]=(LNode*)malloc(sizeof(LNode));
+    }//初始化path
+        T=(int*)malloc((G.vexnum)*sizeof(int));
+    for(i=0;i<G.vexnum;i++){
+        T[i]=0;
+    }//初始化T
+    heap.push({0,src});
+    while(!heap.empty()){
+        PII temp=heap.top();
+        heap.pop();
+        int MinDis=temp.first;
+        int MinVex=temp.second;
+        if(!T[MinVex]){
+            T[MinVex]=1;
+            LNode* p=(LNode*)malloc(sizeof(LNode));
+            p->data=MinVex;
+            p->next=path[MinVex];
+            path[MinVex]=p;
+            for(p=G.vertices[MinVex].firstarc;p!=NULL;p=p->nextarc){
+                if(dis[p->adjvex]>dis[MinVex]+p->weight){
+                    dis[p->adjvex]=dis[MinVex]+p->weight;
+                    heap.push({dis[p->adjvex],p->adjvex});
+                    LNode* p=(LNode*)malloc(sizeof(LNode));
+                    p->data
+                }
+            }
+        }
+    }
+    
+    }
+}//基于稀疏图/邻接表的堆优化dijkstra算法
 int UI(MGraph &MG,ALGraph &ALG){
     int op;
     cin>>op;
@@ -316,8 +366,8 @@ int main(){
     cout<<"执行操作："<<endl;
     cout<<"1.打印邻接矩阵图"<<endl;
     cout<<"2.打印邻接表图"<<endl;
-    cout<<"3.邻接矩阵求最短路径"<<endl;
-    cout<<"4.邻接表求最短路径"<<endl;
+    cout<<"3.邻接矩阵朴素算法求最短路径"<<endl;
+    cout<<"4.邻接表堆优化算法求最短路径"<<endl;
     cout<<"0.结束程序"<<endl;
     int in;
     MGraph MG;
