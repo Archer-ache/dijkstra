@@ -199,7 +199,6 @@ void DijkstraMGraph(MGraph G,int src,int dst){
         T[i]=0;
     }
     T[src+1]=1;//初始化T
-
     for(T[0]=1;T[0]!=G.vexnum;T[0]++){
         int MinDis=INF;//dis中的最短距离
         int MinVex=dst;//dis最短距离对应顶点
@@ -259,22 +258,20 @@ void DijkstraMGraph(MGraph G,int src,int dst){
                 else{//通常
                     for(i=0;i<G.vexnum;i++){
                         if(G.ADJmatrix[MinVex][i]!=INF){
-                            if(T[i+1]!=1){
-                                if((MinDis+G.ADJmatrix[MinVex][i])<dis[i]){
-                                    dis[i]=MinDis+G.ADJmatrix[MinVex][i];
-                                    List p=(List)malloc(sizeof(LNode));     //
-                                    p->data=MinVex;
-                                    p->next=path[i];
-                                    path[i]=p;
-                                    //free(p);//若通过中转顶点Minvex比原路径更短，则更新path,添加中转点
-                                }
+                            if((MinDis+G.ADJmatrix[MinVex][i])<dis[i]){
+                                dis[i]=MinDis+G.ADJmatrix[MinVex][i];
+                                List p=(List)malloc(sizeof(LNode));
+                                p->data=MinVex;
+                                p->next=path[i];
+                                path[i]=p;
+                                //free(p);//若通过中转顶点Minvex比原路径更短，则更新path,添加中转点
                             }
                         }
-                    }//for2
+                    }
                 }//else3
             }//else2
         }//else1
-    }//for1
+    }//for
     }//spc
 }//输出从src到dst的最短路径长度--朴素的dijkstra算法
 typedef pair<int,int>PII;//pair自动按第一关键字优先来比较大小
@@ -314,21 +311,43 @@ void DijkstraALGraph(ALGraph G, int src,int dst){
         int MinVex=temp.second;
         if(!T[MinVex]){
             T[MinVex]=1;
-            LNode* p=(LNode*)malloc(sizeof(LNode));
-            p->data=MinVex;
-            p->next=path[MinVex];
-            path[MinVex]=p;
+            LNode* q=(LNode*)malloc(sizeof(LNode));
+            q->data=MinVex;
+            q->next=path[MinVex];
+            path[MinVex]=q;//在path中增加可达节点MinVex
             for(p=G.vertices[MinVex].firstarc;p!=NULL;p=p->nextarc){
                 if(dis[p->adjvex]>dis[MinVex]+p->weight){
                     dis[p->adjvex]=dis[MinVex]+p->weight;
                     heap.push({dis[p->adjvex],p->adjvex});
-                    LNode* p=(LNode*)malloc(sizeof(LNode));
-                    p->data
+                    if(MinVex!=src){
+                    LNode* q=(LNode*)malloc(sizeof(LNode));
+                    q->data=MinVex;
+                    q->next=path[p->adjvex];
+                    path[p->adjvex]=q;
+                    }
                 }
-            }
+            }//在path中增加中转节点MinVex
+            if(MinVex==dst){
+                cout<<"src: v"<<src<<", dst: v"<<dst<<"间存在最短路径"<<endl;
+                cout<<"路径长度: "<<dis[dst]<<endl;
+                cout<<"path: ";
+                for(List q=path[dst];q!=NULL;q=q->next){
+                    if(q->next==NULL){
+                        cout<<"v"<<q->data;
+                    }
+                    else{
+                        cout<<"v"<<q->data<<"<--";
+                    }
+                }
+                cout<<endl;
+                return;
+            }//output path
         }
     }
-    
+    if(dis[dst]==INF){
+        cout<<"src: v"<<src<<", dst: v"<<dst<<"间不存在最短路径"<<endl;
+        return;
+    }
     }
 }//基于稀疏图/邻接表的堆优化dijkstra算法
 int UI(MGraph &MG,ALGraph &ALG){
